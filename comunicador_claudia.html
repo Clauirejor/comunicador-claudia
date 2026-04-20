@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Comunicador Claudia">
+<meta name="theme-color" content="#3C3489">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Comunicador de Claudia</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f0ede8;color:#1a1a1a;-webkit-tap-highlight-color:transparent;}
+#app{padding:12px;min-height:100vh;transition:background 0.3s;}
+#app.theme-st{background:#0a0a1a;color:#e0e0ff;}
+#app.theme-lego{background:#fff200;color:#1a1a1a;}
+#app.theme-base{background:#f0ede8;color:#1a1a1a;}
+
+#topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;gap:6px;}
+#title-area{display:flex;align-items:center;gap:8px;flex:1;min-width:0;}
+#title-icon{width:38px;height:38px;border-radius:50%;object-fit:cover;cursor:pointer;border:2px solid #3C3489;flex-shrink:0;}
+#app.theme-st #title-icon{border-color:#cc0000;}
+#app.theme-lego #title-icon{border-color:#e3000b;}
+#title-text{font-size:17px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;}
+#app.theme-st #title-text{color:#e0e0ff;}
+#app.theme-lego #title-text{color:#1a1a1a;}
+
+#controls{display:flex;gap:5px;flex-shrink:0;}
+.ctrl-btn{padding:6px 11px;border-radius:20px;border:1.5px solid #bbb;font-size:13px;cursor:pointer;background:#fff;color:#333;white-space:nowrap;}
+#app.theme-st .ctrl-btn{background:#1a1a2e;border-color:#cc0000;color:#e0e0ff;}
+#app.theme-lego .ctrl-btn{background:#e3000b;border-color:#b30009;color:#fff;}
+.ctrl-btn.active-lang{font-weight:700;background:#3C3489;color:#EEEDFE;border-color:#3C3489;}
+#app.theme-st .ctrl-btn.active-lang{background:#cc0000;border-color:#cc0000;}
+#app.theme-lego .ctrl-btn.active-lang{background:#003fa3;border-color:#003fa3;}
+#edit-btn.edit-on{background:#F5C4B3!important;color:#4A1B0C!important;border-color:#D85A30!important;}
+
+#phrase-bar{min-height:54px;border-radius:14px;padding:10px 12px;margin-bottom:10px;display:flex;align-items:center;gap:8px;border:1.5px solid #ddd;background:#fff;}
+#app.theme-st #phrase-bar{background:#1a1a2e;border-color:#cc0000;}
+#app.theme-lego #phrase-bar{background:#fff;border-color:#003fa3;}
+#phrase-text{font-size:18px;font-weight:500;flex:1;color:#1a1a1a;text-transform:uppercase;}
+#app.theme-st #phrase-text{color:#e0e0ff;}
+#app.theme-lego #phrase-text{color:#1a1a1a;}
+.phrase-action{background:none;border:none;font-size:22px;cursor:pointer;padding:4px 6px;opacity:0.65;flex-shrink:0;border-radius:8px;}
+.phrase-action:active{opacity:1;transform:scale(0.92);}
+
+.tabs{display:flex;gap:5px;margin-bottom:10px;flex-wrap:wrap;}
+.tab{flex:1;min-width:0;padding:8px 4px;border-radius:10px;border:1.5px solid #ddd;cursor:pointer;font-size:12px;font-weight:400;text-align:center;white-space:nowrap;background:#fff;color:#666;}
+#app.theme-st .tab{background:#1a1a2e;border-color:#333;color:#aaa;}
+#app.theme-lego .tab{background:#fff;border-color:#ccc;color:#555;}
+.tab.active.t0{background:#E6F1FB;color:#0C447C;border-color:#378ADD;font-weight:600;}
+.tab.active.t1{background:#EAF3DE;color:#27500A;border-color:#639922;font-weight:600;}
+.tab.active.t2{background:#FAEEDA;color:#633806;border-color:#BA7517;font-weight:600;}
+.tab.active.t3{background:#FBEAF0;color:#4B1528;border-color:#D4537E;font-weight:600;}
+.tab.active.t4{background:#EEEDFE;color:#26215C;border-color:#7F77DD;font-weight:600;}
+.tab.active.t5{background:#E1F5EE;color:#04342C;border-color:#1D9E75;font-weight:600;}
+#app.theme-st .tab.active{background:#cc0000;color:#fff;border-color:#cc0000;}
+#app.theme-lego .tab.active{background:#e3000b;color:#fff;border-color:#e3000b;}
+
+.grid{display:grid;grid-template-columns:repeat(5,1fr);gap:9px;}
+.cell{aspect-ratio:1;border-radius:14px;border:1.5px solid #ddd;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:7px;position:relative;transition:transform 0.1s;user-select:none;background:#fff;}
+#app.theme-st .cell{background:#1a1a2e;border-color:#333;}
+#app.theme-lego .cell{background:#fff;border-color:#ccc;}
+.cell:active{transform:scale(0.91);}
+.cell.edit-mode{border:2px dashed #D85A30!important;}
+.cell-emoji{font-size:36px;line-height:1;}
+.cell-label{font-size:14px;font-weight:600;text-align:center;line-height:1.2;color:#1a1a1a;text-transform:uppercase;}
+#app.theme-st .cell-label{color:#e0e0ff;}
+.cell img.cell-img{width:46px;height:46px;object-fit:contain;border-radius:6px;}
+.grid.cols-6 .cell-emoji{font-size:26px;} .grid.cols-6 .cell-label{font-size:11px;} .grid.cols-6 .cell img.cell-img{width:36px;height:36px;}
+.grid.cols-7 .cell-emoji{font-size:22px;} .grid.cols-7 .cell-label{font-size:10px;} .grid.cols-7 .cell img.cell-img{width:30px;height:30px;}
+.grid.cols-8 .cell-emoji{font-size:19px;} .grid.cols-8 .cell-label{font-size:9px;}  .grid.cols-8 .cell img.cell-img{width:26px;height:26px;}
+.cell-edit-icon{position:absolute;top:3px;right:4px;font-size:10px;opacity:0.5;}
+
+#rows-toggle{display:flex;align-items:center;gap:5px;margin-bottom:7px;justify-content:flex-end;}
+#rows-toggle span{font-size:11px;color:#888;}
+#rows-toggle button{padding:3px 10px;border-radius:12px;border:1px solid #ccc;font-size:11px;cursor:pointer;background:#fff;color:#444;}
+#rows-toggle button.sel{background:#3C3489;color:#EEEDFE;border-color:#3C3489;font-weight:700;}
+#app.theme-st #rows-toggle button{background:#1a1a2e;border-color:#555;color:#ccc;}
+#app.theme-st #rows-toggle button.sel{background:#cc0000;border-color:#cc0000;color:#fff;}
+#app.theme-lego #rows-toggle button.sel{background:#003fa3;border-color:#003fa3;color:#fff;}
+
+.emo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:11px;}
+.emo-cell{border-radius:16px;border:1.5px solid #ddd;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;padding:16px 8px;user-select:none;background:#fff;}
+.emo-cell:active{transform:scale(0.93);}
+#app.theme-st .emo-cell{background:#1a1a2e;border-color:#333;}
+#app.theme-lego .emo-cell{background:#fff;border-color:#ccc;}
+.emo-face{font-size:50px;line-height:1;}
+.emo-label{font-size:14px;font-weight:600;text-align:center;color:#1a1a1a;text-transform:uppercase;}
+#app.theme-st .emo-label{color:#e0e0ff;}
+
+#caras-area{display:flex;flex-direction:column;align-items:center;gap:14px;padding:10px 0;}
+#caras-mode-bar{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
+.mode-pill{padding:8px 16px;border-radius:20px;border:1.5px solid #ccc;font-size:13px;cursor:pointer;background:#fff;color:#333;}
+.mode-pill.sel{background:#7F77DD;color:#fff;border-color:#534AB7;font-weight:600;}
+#app.theme-st .mode-pill{background:#1a1a2e;border-color:#555;color:#ccc;}
+#app.theme-st .mode-pill.sel{background:#cc0000;border-color:#cc0000;}
+#app.theme-lego .mode-pill.sel{background:#003fa3;border-color:#003fa3;color:#fff;}
+#caras-big{font-size:120px;line-height:1;text-align:center;cursor:pointer;user-select:none;}
+#caras-question{font-size:16px;text-align:center;font-weight:500;padding:0 10px;color:#333;}
+#app.theme-st #caras-question{color:#e0e0ff;}
+#caras-options{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;width:100%;}
+.caras-opt{border-radius:12px;border:1.5px solid #ddd;padding:15px 8px;text-align:center;cursor:pointer;font-size:15px;font-weight:600;background:#fff;color:#1a1a1a;}
+#app.theme-st .caras-opt{background:#1a1a2e;border-color:#333;color:#e0e0ff;}
+.caras-opt:active{transform:scale(0.96);}
+.caras-opt.correct{background:#EAF3DE!important;border-color:#639922!important;color:#27500A!important;}
+.caras-opt.wrong{background:#FCEBEB!important;border-color:#E24B4A!important;color:#501313!important;}
+#caras-reveal{font-size:15px;text-align:center;padding:10px 16px;border-radius:10px;display:none;}
+#caras-reveal.show{display:block;background:#EAF3DE;color:#27500A;}
+#app.theme-st #caras-reveal.show{background:#1a3a1a;color:#9fe1cb;}
+#caras-next{padding:11px 26px;border-radius:22px;border:none;font-size:15px;font-weight:600;cursor:pointer;background:#3C3489;color:#fff;display:none;}
+#caras-next.show{display:block;}
+#app.theme-st #caras-next.show{background:#cc0000;}
+#app.theme-lego #caras-next.show{background:#003fa3;}
+#caras-score{font-size:13px;color:#888;}
+
+#memory-area{display:flex;flex-direction:column;gap:10px;}
+#memory-config{border-radius:14px;border:1.5px solid #ddd;padding:14px;background:#fff;}
+#app.theme-st #memory-config{background:#1a1a2e;border-color:#333;}
+#app.theme-lego #memory-config{background:#fff;border-color:#ccc;}
+#memory-config h3{font-size:15px;font-weight:600;margin-bottom:12px;color:#1a1a1a;}
+#app.theme-st #memory-config h3{color:#e0e0ff;}
+.mem-row{display:flex;align-items:center;gap:8px;margin-bottom:9px;flex-wrap:wrap;}
+.mem-row label{font-size:12px;color:#888;min-width:80px;}
+.mem-pill{padding:6px 13px;border-radius:14px;border:1.5px solid #ccc;font-size:12px;cursor:pointer;background:#f5f5f5;color:#333;}
+.mem-pill.sel{background:#7F77DD;color:#fff;border-color:#534AB7;font-weight:600;}
+#app.theme-st .mem-pill{background:#0d0d22;border-color:#444;color:#ccc;}
+#app.theme-st .mem-pill.sel{background:#cc0000;border-color:#cc0000;}
+#app.theme-lego .mem-pill.sel{background:#003fa3;border-color:#003fa3;color:#fff;}
+#mem-cat-select{display:flex;flex-wrap:wrap;gap:7px;}
+.mem-cat-tag{padding:6px 12px;border-radius:12px;border:1.5px solid #ccc;font-size:12px;cursor:pointer;background:#f5f5f5;color:#333;}
+.mem-cat-tag.sel{background:#1D9E75;color:#fff;border-color:#0F6E56;}
+#app.theme-st .mem-cat-tag{background:#0d0d22;border-color:#444;color:#ccc;}
+#mem-start-btn{padding:11px 22px;border-radius:22px;border:none;font-size:15px;font-weight:600;cursor:pointer;background:#3C3489;color:#fff;margin-top:6px;}
+#app.theme-st #mem-start-btn{background:#cc0000;}
+#app.theme-lego #mem-start-btn{background:#003fa3;}
+#mem-edit-section{margin-top:13px;border-top:1px solid #eee;padding-top:11px;}
+#app.theme-st #mem-edit-section{border-color:#333;}
+.mem-edit-cat-header{display:flex;align-items:center;justify-content:space-between;margin:10px 0 6px;}
+.mem-edit-cat-title{font-size:12px;font-weight:600;color:#888;}
+.mem-add-btn{padding:5px 13px;border-radius:12px;border:1.5px solid #1D9E75;background:none;color:#1D9E75;font-size:12px;font-weight:600;cursor:pointer;}
+.mem-item-row{display:flex;align-items:center;gap:8px;margin-bottom:5px;padding:6px 9px;border-radius:9px;border:1px solid #eee;background:#fafafa;}
+#app.theme-st .mem-item-row{border-color:#333;background:#0d0d22;}
+.mem-item-thumb{width:32px;height:32px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;overflow:hidden;}
+.mem-item-thumb img{width:32px;height:32px;object-fit:cover;border-radius:6px;}
+.mem-item-name{flex:1;font-size:12px;color:#333;}
+#app.theme-st .mem-item-name{color:#ccc;}
+.mem-item-edit-btn{padding:4px 10px;border-radius:8px;border:1px solid #ccc;background:#fff;color:#666;font-size:11px;cursor:pointer;}
+.mem-item-del-btn{padding:4px 8px;border-radius:8px;border:1px solid #E24B4A;background:none;color:#E24B4A;font-size:11px;cursor:pointer;}
+.info-note{font-size:11px;color:#888;padding:7px 9px;border-radius:9px;border:1px solid #eee;margin-top:7px;background:#fafafa;}
+#app.theme-st .info-note{color:#aaa;border-color:#333;background:#0d0d22;}
+
+#mem-board{display:grid;gap:8px;}
+.mem-card{border-radius:12px;border:2.5px solid #534AB7;cursor:pointer;display:flex;align-items:center;justify-content:center;aspect-ratio:1;transition:all 0.2s;user-select:none;position:relative;overflow:hidden;background:#7F77DD;}
+#app.theme-st .mem-card{background:#cc0000;border-color:#900;}
+#app.theme-lego .mem-card{background:#e3000b;border-color:#b30009;}
+.mem-card:active{transform:scale(0.93);}
+.mem-card.flipped,.mem-card.matched{background:#fff!important;border-color:#ddd!important;}
+#app.theme-st .mem-card.flipped,#app.theme-st .mem-card.matched{background:#1a1a2e!important;border-color:#444!important;}
+.mem-card.matched{opacity:0.4;}
+.mem-card-inner{display:none;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:6px;width:100%;height:100%;}
+.mem-card.flipped .mem-card-inner,.mem-card.matched .mem-card-inner{display:flex;}
+.mem-card-back{font-size:28px;color:#fff;font-weight:700;opacity:0.4;}
+.mem-word{font-size:16px;font-weight:700;text-align:center;line-height:1.2;color:#1a1a1a;word-break:break-word;padding:4px;}
+#app.theme-st .mem-word{color:#e0e0ff;}
+#mem-status{font-size:15px;font-weight:500;text-align:center;padding:6px 0;color:#333;}
+#app.theme-st #mem-status{color:#e0e0ff;}
+#mem-stop-btn{display:none;padding:9px 20px;border-radius:20px;border:1px solid #ccc;font-size:13px;cursor:pointer;align-self:center;background:#fff;color:#666;}
+#mem-stop-btn.show{display:block;}
+
+#modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:200;align-items:center;justify-content:center;}
+#modal.open{display:flex;}
+#modal-box{background:#fff;border-radius:16px;padding:20px;width:88%;max-width:320px;max-height:88vh;overflow-y:auto;}
+#modal-box h3{font-size:16px;font-weight:600;margin-bottom:12px;color:#1a1a1a;}
+#modal-box label{font-size:12px;color:#888;display:block;margin-bottom:4px;margin-top:10px;}
+#modal-box input[type=text]{width:100%;padding:9px 11px;font-size:15px;border:1.5px solid #ddd;border-radius:10px;background:#fff;color:#1a1a1a;}
+#modal-box input[type=file]{width:100%;font-size:13px;margin-top:5px;color:#666;}
+.modal-actions{display:flex;gap:8px;margin-top:14px;}
+.modal-actions button{flex:1;padding:10px;font-size:14px;border-radius:11px;cursor:pointer;border:1.5px solid #ddd;background:#fff;color:#333;font-weight:500;}
+.modal-save{background:#3C3489!important;color:#fff!important;border-color:#3C3489!important;font-weight:600!important;}
+.theme-pills{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px;}
+.theme-pill{padding:6px 13px;border-radius:16px;border:1.5px solid #ccc;font-size:13px;cursor:pointer;background:#f5f5f5;color:#333;}
+.theme-pill.sel{background:#3C3489;color:#fff;border-color:#3C3489;}
+</style>
+</head>
+<body>
+<div id="app" class="theme-base">
+<div id="topbar">
+  <div id="title-area">
+    <img id="title-icon" src="" onclick="openTitleEdit()" />
+    <span id="title-text" onclick="openTitleEdit()">Comunicador de Claudia</span>
+  </div>
+  <div id="controls">
+    <button class="ctrl-btn active-lang" onclick="setLang('es')">ES</button>
+    <button class="ctrl-btn" onclick="setLang('val')">VAL</button>
+    <button class="ctrl-btn" id="edit-btn" onclick="toggleEdit()">✏️</button>
+  </div>
+</div>
+<div id="phrase-bar">
+  <span id="phrase-text">Pulsa un botón para hablar...</span>
+  <button class="phrase-action" onclick="repeatPhrase()" title="Repetir">🔊</button>
+  <button class="phrase-action" onclick="clearPhrase()" title="Borrar">✕</button>
+</div>
+<div class="tabs" id="tabs-bar"></div>
+<div id="content-area"></div>
+</div>
+<div id="modal"><div id="modal-box"></div></div>
+
+<script>
+const TABS=[
+  {id:'colegio',label:'🏫 Colegio',cls:'t0'},
+  {id:'casa',label:'🏠 Casa',cls:'t1'},
+  {id:'amigos',label:'🎮 Amigos',cls:'t2'},
+  {id:'emociones',label:'😊 Emociones',cls:'t3'},
+  {id:'caras',label:'🎭 Caras',cls:'t4'},
+  {id:'memory',label:'🃏 Memory',cls:'t5'},
+];
+const EMOCIONES=[
+  {es:'Contenta',val:'Contenta',e:'😄'},{es:'Triste',val:'Trista',e:'😢'},
+  {es:'Enfadada',val:'Enfadada',e:'😤'},{es:'Miedo',val:'Por',e:'😨'},
+  {es:'Sorpresa',val:'Sorpresa',e:'😮'},{es:'Cansada',val:'Cansada',e:'😴'},
+  {es:'Nerviosa',val:'Nerviosa',e:'😰'},{es:'Enamorada',val:'Enamorada',e:'🥰'},
+  {es:'Aburrida',val:'Avorida',e:'😑'},{es:'Bien',val:'Bé',e:'😊'},
+  {es:'Mal',val:'Malament',e:'🤒'},{es:'Feliz',val:'Feliç',e:'🌟'},
+];
+const COMM_DATA={
+  colegio:[
+    {es:'Necesito ayuda',val:'Necessito ajuda',e:'🙋'},{es:'No entiendo',val:'No entenc',e:'❓'},
+    {es:'Quiero ir al baño',val:'Vull anar al bany',e:'🚽'},{es:'Tengo sed',val:'Tinc set',e:'💧'},
+    {es:'Tengo hambre',val:'Tinc gana',e:'🍎'},{es:'Estoy bien',val:'Estic bé',e:'😊'},
+    {es:'Estoy triste',val:'Estic trist',e:'😢'},{es:'Me duele',val:'Em fa mal',e:'🤕'},
+    {es:'Quiero descansar',val:'Vull descansar',e:'😴'},{es:'Quiero salir',val:'Vull eixir',e:'🚪'},
+    {es:'Me gusta',val:"M'agrada",e:'❤️'},{es:'No me gusta',val:"No m'agrada",e:'👎'},
+    {es:'Sí',val:'Sí',e:'✅'},{es:'No',val:'No',e:'❌'},
+    {es:'Por favor',val:'Per favor',e:'🙏'},{es:'Gracias',val:'Gràcies',e:'🌟'},
+    {es:'Espera',val:'Espera',e:'✋'},{es:'¡Bien!',val:'Molt bé!',e:'🏆'},
+    {es:'No sé',val:'No sé',e:'🤷'},{es:'Ya terminé',val:'Ja he acabat',e:'🎉'},
+    {es:'Tengo frío',val:'Tinc fred',e:'🥶'},{es:'Tengo calor',val:'Tinc calor',e:'🌡️'},
+    {es:'Estoy cansada',val:'Estic cansada',e:'😓'},{es:'Quiero más',val:'Vull més',e:'➕'},
+    {es:'Sí',val:'Sí',e:'✅'},{es:'No',val:'No',e:'❌'},
+  ],
+  casa:[
+    {es:'Mamá',val:'Mare',e:'👩'},{es:'Papá',val:'Pare',e:'👨'},
+    {es:'Abuela',val:'Àvia',e:'👵'},{es:'Quiero comer',val:'Vull menjar',e:'🍽️'},
+    {es:'Quiero agua',val:'Vull aigua',e:'💧'},{es:'Quiero jugar',val:'Vull jugar',e:'🎮'},
+    {es:'Ver la tele',val:'Veure la tele',e:'📺'},{es:'Quiero un cuento',val:'Vull un conte',e:'📖'},
+    {es:'Me voy a dormir',val:"Me'n vaig a dormir",e:'🌙'},{es:'Dame un abrazo',val:"Dona'm una abraçada",e:'🤗'},
+    {es:'Estoy enfadada',val:'Estic enfadada',e:'😤'},{es:'Quiero música',val:'Vull música',e:'🎵'},
+    {es:'Baile',val:'Ball',e:'💃'},{es:'Robótica',val:'Robòtica',e:'🤖'},
+    {es:'Stranger Things',val:'Stranger Things',e:'🔴'},{es:'Lego',val:'Lego',e:'🧱'},
+    {es:'Tengo frío',val:'Tinc fred',e:'🥶'},{es:'Tengo calor',val:'Tinc calor',e:'🌡️'},
+    {es:'Estoy contenta',val:'Estic contenta',e:'😄'},{es:'Quiero salir',val:'Vull eixir',e:'🚪'},
+    {es:'Sí',val:'Sí',e:'✅'},{es:'No',val:'No',e:'❌'},
+    {es:'Por favor',val:'Per favor',e:'🙏'},{es:'Gracias',val:'Gràcies',e:'🌟'},
+    {es:'Me duele',val:'Em fa mal',e:'🤕'},{es:'Necesito ayuda',val:'Necessito ajuda',e:'🙋'},
+    {es:'Estoy bien',val:'Estic bé',e:'😊'},{es:'Estoy triste',val:'Estic trist',e:'😢'},
+    {es:'No entiendo',val:'No entenc',e:'❓'},{es:'Espera',val:'Espera',e:'✋'},
+  ],
+  amigos:[
+    {es:'Hola',val:'Hola',e:'👋'},{es:'¿Jugamos?',val:'Juguem?',e:'🎯'},
+    {es:'Ven conmigo',val:'Vine amb mi',e:'🤝'},{es:'Es mi turno',val:'És el meu torn',e:'⭐'},
+    {es:'Espera',val:'Espera',e:'✋'},{es:'Mira esto',val:'Mira açò',e:'👀'},
+    {es:'¡Bien hecho!',val:'Ben fet!',e:'🏆'},{es:'Vamos a bailar',val:'Anem a ballar',e:'💃'},
+    {es:'Me gusta tu idea',val:"M'agrada la teua idea",e:'💡'},{es:'Estoy contenta',val:'Estic contenta',e:'😄'},
+    {es:'¿Eres mi amiga?',val:'Ets la meua amiga?',e:'💕'},{es:'Hasta luego',val:'Fins aviat',e:'👋'},
+    {es:'Te echo de menos',val:"T'enyore",e:'💌'},{es:'Sí',val:'Sí',e:'✅'},
+    {es:'No',val:'No',e:'❌'},{es:'Por favor',val:'Per favor',e:'🙏'},
+    {es:'Gracias',val:'Gràcies',e:'🌟'},{es:'Necesito ayuda',val:'Necessito ajuda',e:'🙋'},
+    {es:'Quiero ir a casa',val:'Vull anar a casa',e:'🏠'},{es:'¡Genial!',val:'Genial!',e:'🔥'},
+    {es:'Me duele',val:'Em fa mal',e:'🤕'},{es:'Tengo sed',val:'Tinc set',e:'💧'},
+    {es:'Tengo hambre',val:'Tinc gana',e:'🍎'},{es:'No me gusta',val:"No m'agrada",e:'👎'},
+    {es:'Quiero jugar',val:'Vull jugar',e:'🎮'},{es:'Estoy triste',val:'Estic trist',e:'😢'},
+    {es:'Me alegro',val:"M'alegre",e:'🥳'},{es:'Tengo miedo',val:'Tinc por',e:'😨'},
+    {es:'Estoy bien',val:'Estic bé',e:'😊'},{es:'No entiendo',val:'No entenc',e:'❓'},
+  ],
+};
+const DEFAULT_MEM_CATS={
+  animales:{label:'🐾 Animales',items:[
+    {es:'Perro',val:'Gos',e:'🐶'},{es:'Gato',val:'Gat',e:'🐱'},{es:'Pez',val:'Peix',e:'🐟'},
+    {es:'Pájaro',val:'Ocell',e:'🐦'},{es:'Vaca',val:'Vaca',e:'🐮'},{es:'Caballo',val:'Cavall',e:'🐴'},
+    {es:'León',val:'Lleó',e:'🦁'},{es:'Elefante',val:'Elefant',e:'🐘'},
+  ]},
+  frutas:{label:'🍎 Frutas',items:[
+    {es:'Manzana',val:'Poma',e:'🍎'},{es:'Plátano',val:'Plàtan',e:'🍌'},{es:'Uva',val:'Raïm',e:'🍇'},
+    {es:'Fresa',val:'Maduixa',e:'🍓'},{es:'Naranja',val:'Taronja',e:'🍊'},{es:'Sandía',val:'Síndria',e:'🍉'},
+    {es:'Pera',val:'Pera',e:'🍐'},{es:'Limón',val:'Llimona',e:'🍋'},
+  ]},
+  colegio:{label:'🏫 Colegio',items:[
+    {es:'Libro',val:'Llibre',e:'📚'},{es:'Lápiz',val:'Llapis',e:'✏️'},{es:'Mochila',val:'Motxilla',e:'🎒'},
+    {es:'Mesa',val:'Taula',e:'🪑'},{es:'Tijeras',val:'Tisores',e:'✂️'},{es:'Regla',val:'Regle',e:'📏'},
+    {es:'Pintura',val:'Pintura',e:'🎨'},{es:'Goma',val:'Goma',e:'⬜'},
+  ]},
+  emociones:{label:'😊 Emociones',items:EMOCIONES.slice(0,8)},
+  casa:{label:'🏠 Casa',items:COMM_DATA.casa.slice(0,8)},
+};
+const THEMES={base:'Normal',st:'Stranger Things',lego:'Lego'};
+
+let ST={
+  lang:'es',tab:'colegio',editMode:false,rows:4,cols:5,theme:'base',
+  title:'Comunicador de Claudia',iconEmoji:'🌟',iconImg:null,
+  data:JSON.parse(JSON.stringify(COMM_DATA)),
+  memCats:JSON.parse(JSON.stringify(DEFAULT_MEM_CATS)),
+};
+try{const s=localStorage.getItem('claudia_ipad');if(s){const p=JSON.parse(s);if(p.data)Object.assign(ST,p);}}catch(e){}
+function persist(){try{localStorage.setItem('claudia_ipad',JSON.stringify(ST));}catch(e){}}
+
+let phraseWords=[];
+let memState={active:false,cards:[],flipped:[],matched:[],locked:false,moves:0};
+let carasState={mode:'adivina',score:0,total:0,answered:false};
+let memCfg={mode:'imagen',cats:['animales'],pairs:4};
+
+function applyTheme(){document.getElementById('app').className='theme-'+ST.theme;}
+function setLang(l){
+  ST.lang=l;
+  document.querySelectorAll('.ctrl-btn').forEach(b=>{
+    if(b.textContent==='ES'||b.textContent==='VAL')b.classList.toggle('active-lang',b.textContent===l.toUpperCase());
+  });
+  clearPhrase();renderContent();
+}
+function setTab(t){
+  ST.tab=t;
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+  const el=document.querySelector('.tab[data-id="'+t+'"]');
+  if(el)el.classList.add('active');
+  renderContent();
+}
+function setRows(r){
+  ST.rows=r;persist();
+  [4,5,6].forEach(n=>{const b=document.getElementById('r'+n);if(b)b.classList.toggle('sel',n===r);});
+  const bi=document.getElementById('rinf');if(bi)bi.classList.toggle('sel',r===0);
+  renderContent();
+}
+function setCols(c){
+  ST.cols=c;persist();
+  [4,5,6,7,8].forEach(n=>{const b=document.getElementById('c'+n);if(b)b.classList.toggle('sel',n===c);});
+  renderContent();
+}
+function openNewPict(){
+  document.getElementById('modal-box').innerHTML=`
+    <h3>Nuevo pictograma</h3>
+    <label>Texto en español</label><input type="text" id="m-es" placeholder="Ej: Quiero zumo" />
+    <label>Text en valencià</label><input type="text" id="m-val" placeholder="Ex: Vull suc" />
+    <label>Emoji</label><input type="text" id="m-emoji" value="⭐" maxlength="4" style="width:70px;" />
+    <label>📷 Foto (opcional)</label><input type="file" id="m-img" accept="image/*" />
+    <div class="modal-actions">
+      <button onclick="closeModal()">Cancelar</button>
+      <button class="modal-save" onclick="saveNewPict()">Añadir</button>
+    </div>`;
+  document.getElementById('modal').classList.add('open');
+}
+function saveNewPict(){
+  const es=document.getElementById('m-es').value.trim();
+  const val=document.getElementById('m-val').value.trim();
+  const e=document.getElementById('m-emoji').value.trim()||'⭐';
+  if(!es){alert('El nombre en español es obligatorio.');return;}
+  const file=document.getElementById('m-img').files[0];
+  const apply=(img)=>{
+    ST.data[ST.tab].push({es,val:val||es,e,img});
+    persist();closeModal();renderContent();
+  };
+  if(file){const r=new FileReader();r.onload=ev=>apply(ev.target.result);r.readAsDataURL(file);}
+  else apply(null);
+}
+function toggleEdit(){
+  ST.editMode=!ST.editMode;
+  const btn=document.getElementById('edit-btn');
+  btn.classList.toggle('edit-on',ST.editMode);
+  btn.textContent=ST.editMode?'✅':'✏️';
+  renderContent();
+}
+function doSpeak(t){
+  if('speechSynthesis' in window){
+    window.speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(t);
+    u.lang=ST.lang==='val'?'ca-ES':'es-ES';u.rate=0.85;
+    window.speechSynthesis.speak(u);
+  }
+}
+function speak(text){
+  phraseWords.push(text);
+  const full=phraseWords.join(' ');
+  document.getElementById('phrase-text').textContent=full;
+  doSpeak(full);
+}
+function repeatPhrase(){
+  const t=document.getElementById('phrase-text').textContent;
+  if(t&&t!=='Pulsa un botón para hablar...')doSpeak(t);
+}
+function clearPhrase(){
+  phraseWords=[];
+  document.getElementById('phrase-text').textContent='Pulsa un botón para hablar...';
+  window.speechSynthesis&&window.speechSynthesis.cancel();
+}
+function renderTabs(){
+  const bar=document.getElementById('tabs-bar');bar.innerHTML='';
+  TABS.forEach(t=>{
+    const d=document.createElement('div');
+    d.className='tab '+t.cls+(ST.tab===t.id?' active':'');
+    d.setAttribute('data-id',t.id);d.textContent=t.label;
+    d.onclick=()=>setTab(t.id);bar.appendChild(d);
+  });
+}
+function renderContent(){
+  renderTabs();updateTitleUI();applyTheme();
+  const area=document.getElementById('content-area');
+  const isGame=['caras','memory','emociones'].includes(ST.tab);
+  document.getElementById('phrase-bar').style.display=isGame?'none':'flex';
+  if(ST.tab==='emociones'){renderEmociones(area);return;}
+  if(ST.tab==='caras'){renderCaras(area);return;}
+  if(ST.tab==='memory'){renderMemory(area);return;}
+  area.innerHTML=`<div id="rows-toggle">
+    <span>Cols:</span>
+    <button id="c4" onclick="setCols(4)" class="${ST.cols===4?'sel':''}">4</button>
+    <button id="c5" onclick="setCols(5)" class="${ST.cols===5?'sel':''}">5</button>
+    <button id="c6" onclick="setCols(6)" class="${ST.cols===6?'sel':''}">6</button>
+    <button id="c7" onclick="setCols(7)" class="${ST.cols===7?'sel':''}">7</button>
+    <button id="c8" onclick="setCols(8)" class="${ST.cols===8?'sel':''}">8</button>
+    <span style="margin-left:8px;">Filas:</span>
+    <button id="r4" onclick="setRows(4)" class="${ST.rows===4?'sel':''}">4</button>
+    <button id="r5" onclick="setRows(5)" class="${ST.rows===5?'sel':''}">5</button>
+    <button id="r6" onclick="setRows(6)" class="${ST.rows===6?'sel':''}">6</button>
+    <button id="rinf" onclick="setRows(0)" class="${ST.rows===0?'sel':''}">∞</button>
+    <button id="add-pict-btn" onclick="openNewPict()" style="margin-left:10px;padding:3px 12px;border-radius:12px;border:1.5px solid #1D9E75;background:none;color:#1D9E75;font-size:13px;font-weight:700;cursor:pointer;">+ Nuevo</button>
+  </div><div class="grid cols-${ST.cols}" id="grid" style="grid-template-columns:repeat(${ST.cols},1fr);"></div>`;
+  const grid=document.getElementById('grid');
+  const items=ST.data[ST.tab];
+  const count=ST.rows===0?items.length:ST.rows*ST.cols;
+  items.slice(0,count).forEach((item,i)=>{
+    const cell=document.createElement('div');
+    cell.className='cell'+(ST.editMode?' edit-mode':'');
+    const img=item.img?`<img class="cell-img" src="${item.img}" />`:`<span class="cell-emoji">${item.e}</span>`;
+    cell.innerHTML=(ST.editMode?'<span class="cell-edit-icon">✏️</span>':'')+img+`<span class="cell-label">${item[ST.lang]}</span>`;
+    cell.onclick=ST.editMode?()=>openCellEdit(i):()=>speak(item[ST.lang]);
+    grid.appendChild(cell);
+  });
+}
+function renderEmociones(area){
+  area.innerHTML='<div class="emo-grid" id="emo-grid"></div>';
+  EMOCIONES.forEach(em=>{
+    const c=document.createElement('div');c.className='emo-cell';
+    c.innerHTML=`<span class="emo-face">${em.e}</span><span class="emo-label">${em[ST.lang]}</span>`;
+    c.onclick=()=>speak(em[ST.lang]);
+    document.getElementById('emo-grid').appendChild(c);
+  });
+}
+function renderCaras(area){
+  area.innerHTML=`<div id="caras-area">
+    <div id="caras-mode-bar">
+      <div class="mode-pill${carasState.mode==='adivina'?' sel':''}" onclick="setCarasMode('adivina')">🎭 Yo pongo la cara</div>
+      <div class="mode-pill${carasState.mode==='elige'?' sel':''}" onclick="setCarasMode('elige')">🔍 Adivina cuál es</div>
+    </div>
+    <div id="caras-score"></div>
+    <div id="caras-big"></div>
+    <div id="caras-question"></div>
+    <div id="caras-options"></div>
+    <div id="caras-reveal"></div>
+    <button id="caras-next" class="show" onclick="nextCara()">Siguiente ➡️</button>
+  </div>`;
+  nextCara();
+}
+function setCarasMode(m){
+  carasState={mode:m,score:0,total:0,answered:false};
+  document.querySelectorAll('.mode-pill').forEach(p=>p.classList.toggle('sel',
+    (m==='adivina'&&p.textContent.includes('Yo'))||(m==='elige'&&p.textContent.includes('Adivina'))));
+  nextCara();
+}
+function nextCara(){
+  carasState.answered=false;
+  const all=EMOCIONES;
+  const idx=Math.floor(Math.random()*all.length);
+  const emo=all[idx];
+  const big=document.getElementById('caras-big');
+  const q=document.getElementById('caras-question');
+  const opts=document.getElementById('caras-options');
+  const rev=document.getElementById('caras-reveal');
+  const sc=document.getElementById('caras-score');
+  rev.className='';rev.style.display='none';
+  sc.textContent=carasState.total>0?`Aciertos: ${carasState.score} / ${carasState.total}`:'';
+  big.style.fontSize='120px';big.style.textAlign='center';big.style.cursor='default';big.textContent=emo.e;
+  if(carasState.mode==='adivina'){
+    q.textContent='¿Qué cara es esta?';
+    const wrong=all.filter((_,i)=>i!==idx).sort(()=>Math.random()-0.5).slice(0,3);
+    const choices=[emo,...wrong].sort(()=>Math.random()-0.5);
+    opts.innerHTML='';
+    choices.forEach(c=>{
+      const d=document.createElement('div');d.className='caras-opt';d.textContent=c[ST.lang];
+      d.onclick=()=>{
+        if(carasState.answered)return;
+        carasState.answered=true;carasState.total++;
+        const ok=c.es===emo.es;if(ok)carasState.score++;
+        d.classList.add(ok?'correct':'wrong');
+        opts.querySelectorAll('.caras-opt').forEach(x=>{if(x.textContent===emo[ST.lang])x.classList.add('correct');});
+        rev.textContent=ok?'¡Muy bien! 🌟':'Era: '+emo[ST.lang];
+        rev.className='show';rev.style.display='block';
+        sc.textContent=`Aciertos: ${carasState.score} / ${carasState.total}`;
+        doSpeak(ok?'Muy bien':'Era '+emo[ST.lang]);
+      };
+      opts.appendChild(d);
+    });
+  } else {
+    big.style.cursor='pointer';big.onclick=()=>doSpeak(emo[ST.lang]);
+    q.textContent='Pon esta cara tú también 😄  •  Pulsa el emoji para escuchar';
+    opts.innerHTML='';
+    rev.textContent='Nombre: '+emo[ST.lang];rev.className='show';rev.style.display='block';
+  }
+}
+function renderMemory(area){
+  if(memState.active){renderMemBoard(area);return;}
+  const catOptions=Object.entries(ST.memCats).map(([k,v])=>`
+    <div class="mem-cat-tag${memCfg.cats.includes(k)?' sel':''}" onclick="toggleMemCat('${k}')">${v.label} <span style="font-size:10px;opacity:0.7;">(${v.items.length})</span></div>`).join('');
+  let editHtml='';
+  if(ST.editMode){
+    editHtml='<div id="mem-edit-section">';
+    Object.entries(ST.memCats).forEach(([catKey,cat])=>{
+      editHtml+=`<div class="mem-edit-cat-header">
+        <span class="mem-edit-cat-title">${cat.label} — ${cat.items.length} cartas</span>
+        <button class="mem-add-btn" onclick="openMemItemEdit('${catKey}',null)">+ Añadir</button>
+      </div>`;
+      cat.items.forEach((item,i)=>{
+        const thumb=item.img?`<img src="${item.img}" />`:`<span style="font-size:20px;">${item.e}</span>`;
+        editHtml+=`<div class="mem-item-row">
+          <div class="mem-item-thumb">${thumb}</div>
+          <span class="mem-item-name">${item[ST.lang]}</span>
+          <button class="mem-item-edit-btn" onclick="openMemItemEdit('${catKey}',${i})">✏️</button>
+          <button class="mem-item-del-btn" onclick="delMemItem('${catKey}',${i})">✕</button>
+        </div>`;
+      });
+    });
+    editHtml+='</div>';
+  }
+  let poolSize=0;
+  memCfg.cats.forEach(k=>{if(ST.memCats[k])poolSize+=ST.memCats[k].items.length;});
+  const enough=poolSize>=memCfg.pairs;
+  area.innerHTML=`<div id="memory-area">
+    <div id="memory-config">
+      <h3>Configurar partida</h3>
+      <div class="mem-row">
+        <label>Modo:</label>
+        <div class="mem-pill${memCfg.mode==='imagen'?' sel':''}" onclick="setMemMode('imagen')">🖼️ Imagen+Imagen</div>
+        <div class="mem-pill${memCfg.mode==='palabra'?' sel':''}" onclick="setMemMode('palabra')">🔤 Imagen+Palabra</div>
+      </div>
+      <div class="mem-row">
+        <label>Pares:</label>
+        ${[4,6,8].map(n=>`<div class="mem-pill${memCfg.pairs===n?' sel':''}" onclick="setMemPairs(${n})">${n}</div>`).join('')}
+      </div>
+      <div class="mem-row" style="flex-direction:column;align-items:flex-start;">
+        <label style="margin-bottom:6px;">Categorías:</label>
+        <div id="mem-cat-select">${catOptions}</div>
+      </div>
+      <div class="info-note">Cartas disponibles: <strong>${poolSize}</strong> — se eligen <strong>${memCfg.pairs}</strong> al azar cada partida.${!enough?' ⚠️ Añade más cartas.':''}</div>
+      <button id="mem-start-btn" onclick="startMemory()" ${!enough?'disabled style="opacity:0.4;"':''}>¡Jugar! 🎮</button>
+      ${editHtml}
+    </div>
+    <div id="mem-status"></div>
+    <div id="mem-board"></div>
+    <button id="mem-stop-btn" onclick="stopMemory()">Volver al menú</button>
+  </div>`;
+}
+function setMemMode(m){memCfg.mode=m;renderMemory(document.getElementById('content-area'));}
+function setMemPairs(n){memCfg.pairs=n;renderMemory(document.getElementById('content-area'));}
+function toggleMemCat(k){
+  const i=memCfg.cats.indexOf(k);
+  if(i>=0&&memCfg.cats.length>1)memCfg.cats.splice(i,1);
+  else if(i<0)memCfg.cats.push(k);
+  renderMemory(document.getElementById('content-area'));
+}
+function delMemItem(catKey,idx){
+  if(ST.memCats[catKey].items.length<=1){alert('Debe quedar al menos 1 carta.');return;}
+  ST.memCats[catKey].items.splice(idx,1);persist();renderMemory(document.getElementById('content-area'));
+}
+function openMemItemEdit(catKey,idx){
+  const isNew=idx===null;
+  const item=isNew?{es:'',val:'',e:'⭐',img:null}:ST.memCats[catKey].items[idx];
+  const preview=item.img?`<img src="${item.img}" style="width:60px;height:60px;object-fit:contain;border-radius:8px;" />`:`<span style="font-size:40px;">${item.e}</span>`;
+  document.getElementById('modal-box').innerHTML=`
+    <h3>${isNew?'Nueva carta':'Editar carta'}</h3>
+    ${!isNew?`<div style="text-align:center;margin-bottom:8px;">${preview}</div>`:''}
+    <label>Nombre en español</label><input type="text" id="m-es" value="${item.es}" placeholder="Ej: Manzana" />
+    <label>Nom en valencià</label><input type="text" id="m-val" value="${item.val}" placeholder="Ex: Poma" />
+    <label>Emoji</label><input type="text" id="m-emoji" value="${item.e}" maxlength="4" style="width:70px;" />
+    <label>📷 Foto real (opcional)</label><input type="file" id="m-img" accept="image/*" />
+    ${!isNew&&item.img?`<button onclick="removeMemImg('${catKey}',${idx})" style="margin-top:5px;padding:5px 12px;border-radius:8px;border:1px solid #E24B4A;color:#E24B4A;background:none;cursor:pointer;font-size:12px;">Quitar foto</button>`:''}
+    <div class="modal-actions">
+      <button onclick="closeModal()">Cancelar</button>
+      <button class="modal-save" onclick="saveMemItemEdit('${catKey}',${idx},'${isNew}')">Guardar</button>
+    </div>`;
+  document.getElementById('modal').classList.add('open');
+}
+function removeMemImg(catKey,idx){
+  ST.memCats[catKey].items[idx].img=null;persist();closeModal();renderMemory(document.getElementById('content-area'));
+}
+function saveMemItemEdit(catKey,idxRaw,isNewStr){
+  const isNew=isNewStr==='true';
+  const idx=isNew?null:parseInt(idxRaw);
+  const es=document.getElementById('m-es').value.trim();
+  const val=document.getElementById('m-val').value.trim();
+  const e=document.getElementById('m-emoji').value.trim()||'⭐';
+  if(!es){alert('El nombre en español es obligatorio.');return;}
+  const file=document.getElementById('m-img').files[0];
+  const applyItem=(img)=>{
+    const newItem={es,val:val||es,e,img};
+    if(isNew)ST.memCats[catKey].items.push(newItem);
+    else ST.memCats[catKey].items[idx]=newItem;
+    persist();closeModal();renderMemory(document.getElementById('content-area'));
+  };
+  if(file){const r=new FileReader();r.onload=ev=>applyItem(ev.target.result);r.readAsDataURL(file);}
+  else applyItem(isNew?null:(ST.memCats[catKey].items[idx]||{}).img||null);
+}
+function getMemItems(){
+  let pool=[];
+  memCfg.cats.forEach(k=>{if(ST.memCats[k])pool=[...pool,...ST.memCats[k].items];});
+  return pool.sort(()=>Math.random()-0.5).slice(0,memCfg.pairs);
+}
+function startMemory(){
+  const items=getMemItems();
+  if(items.length<memCfg.pairs)return;
+  let cards=[];
+  items.forEach((item,i)=>{
+    cards.push({id:i*2,pairId:i,type:'emoji',item});
+    cards.push({id:i*2+1,pairId:i,type:memCfg.mode==='imagen'?'emoji':'word',item});
+  });
+  memState={active:true,cards:cards.sort(()=>Math.random()-0.5),flipped:[],matched:[],locked:false,moves:0};
+  renderMemBoard(document.getElementById('content-area'));
+}
+function stopMemory(){memState.active=false;renderMemory(document.getElementById('content-area'));}
+function renderMemBoard(area){
+  area.innerHTML=`<div id="memory-area">
+    <div id="mem-status">Movimientos: ${memState.moves} | Parejas: ${Math.floor(memState.matched.length/2)} / ${memCfg.pairs}</div>
+    <div id="mem-board" style="grid-template-columns:repeat(4,1fr);"></div>
+    <button id="mem-stop-btn" class="show" onclick="stopMemory()">Volver al menú</button>
+  </div>`;
+  const board=document.getElementById('mem-board');
+  memState.cards.forEach(card=>{
+    const isFlipped=memState.flipped.includes(card.id)||memState.matched.includes(card.id);
+    const isMatched=memState.matched.includes(card.id);
+    const div=document.createElement('div');
+    div.className='mem-card'+(isFlipped?' flipped':'')+(isMatched?' matched':'');
+    div.setAttribute('data-cid',card.id);
+    let inner=card.type==='word'
+      ?`<span class="mem-word">${card.item[ST.lang]}</span>`
+      :(card.item.img?`<img style="width:52px;height:52px;object-fit:contain;border-radius:8px;" src="${card.item.img}" />`:`<span style="font-size:36px;line-height:1;">${card.item.e}</span>`);
+    div.innerHTML=`<span class="mem-card-back">?</span><div class="mem-card-inner">${inner}</div>`;
+    div.onclick=()=>flipCard(card.id);board.appendChild(div);
+  });
+  if(memState.matched.length===memState.cards.length&&memState.cards.length>0){
+    document.getElementById('mem-status').textContent=`¡Completado! 🎉 En ${memState.moves} movimientos`;
+    doSpeak('Muy bien, has encontrado todas las parejas');
+  }
+}
+function flipCard(cid){
+  if(memState.locked)return;
+  if(memState.flipped.includes(cid)||memState.matched.includes(cid))return;
+  if(memState.flipped.length>=2)return;
+  memState.flipped.push(cid);
+  document.querySelector(`[data-cid="${cid}"]`)?.classList.add('flipped');
+  if(memState.flipped.length===2){
+    memState.moves++;memState.locked=true;
+    const [a,b]=memState.flipped.map(id=>memState.cards.find(c=>c.id===id));
+    setTimeout(()=>{
+      if(a.pairId===b.pairId){memState.matched.push(a.id,b.id);doSpeak(a.item[ST.lang]);}
+      else document.querySelectorAll(`[data-cid="${a.id}"],[data-cid="${b.id}"]`).forEach(el=>el.classList.remove('flipped'));
+      memState.flipped=[];memState.locked=false;
+      renderMemBoard(document.getElementById('content-area'));
+    },900);
+  }
+}
+let editingCommIdx=null;
+function openCellEdit(idx){
+  editingCommIdx=idx;
+  const item=ST.data[ST.tab][idx];
+  document.getElementById('modal-box').innerHTML=`
+    <h3>Editar botón</h3>
+    <label>Texto en español</label><input type="text" id="m-es" value="${item.es}" />
+    <label>Text en valencià</label><input type="text" id="m-val" value="${item.val}" />
+    <label>Emoji</label><input type="text" id="m-emoji" value="${item.e}" maxlength="4" style="width:70px;" />
+    <label>Foto (opcional)</label><input type="file" id="m-img" accept="image/*" />
+    <div class="modal-actions">
+      <button onclick="closeModal()">Cancelar</button>
+      <button class="modal-save" onclick="saveCellEdit()">Guardar</button>
+    </div>`;
+  document.getElementById('modal').classList.add('open');
+}
+function openTitleEdit(){
+  if(!ST.editMode)return;
+  document.getElementById('modal-box').innerHTML=`
+    <h3>Personalizar</h3>
+    <label>Nombre</label><input type="text" id="m-title" value="${ST.title}" />
+    <label>Emoji del icono</label><input type="text" id="m-icon-emoji" value="${ST.iconEmoji}" maxlength="4" style="width:70px;" />
+    <label>Foto de icono (opcional)</label><input type="file" id="m-icon-img" accept="image/*" />
+    <label>Tema visual</label>
+    <div class="theme-pills">${Object.entries(THEMES).map(([k,v])=>`<div class="theme-pill${ST.theme===k?' sel':''}" onclick="pickTheme('${k}')">${v}</div>`).join('')}</div>
+    <div class="modal-actions">
+      <button onclick="closeModal()">Cancelar</button>
+      <button class="modal-save" onclick="saveTitleEdit()">Guardar</button>
+    </div>`;
+  document.getElementById('modal').classList.add('open');
+}
+function pickTheme(t){
+  ST.theme=t;applyTheme();
+  document.querySelectorAll('.theme-pill').forEach(p=>p.classList.toggle('sel',p.textContent===THEMES[t]));
+}
+function saveCellEdit(){
+  const es=document.getElementById('m-es').value.trim();
+  const val=document.getElementById('m-val').value.trim();
+  const e=document.getElementById('m-emoji').value.trim();
+  const file=document.getElementById('m-img').files[0];
+  if(file){const r=new FileReader();r.onload=ev=>{ST.data[ST.tab][editingCommIdx]={es,val,e,img:ev.target.result};persist();closeModal();renderContent();};r.readAsDataURL(file);}
+  else{ST.data[ST.tab][editingCommIdx]={...ST.data[ST.tab][editingCommIdx],es,val,e};persist();closeModal();renderContent();}
+}
+function saveTitleEdit(){
+  ST.title=document.getElementById('m-title').value.trim()||'Comunicador de Claudia';
+  ST.iconEmoji=document.getElementById('m-icon-emoji').value.trim()||'🌟';
+  const file=document.getElementById('m-icon-img').files[0];
+  if(file){const r=new FileReader();r.onload=ev=>{ST.iconImg=ev.target.result;persist();closeModal();renderContent();};r.readAsDataURL(file);}
+  else{persist();closeModal();renderContent();}
+}
+function closeModal(){document.getElementById('modal').classList.remove('open');}
+function updateTitleUI(){
+  document.getElementById('title-text').textContent=ST.title;
+  const ico=document.getElementById('title-icon');
+  ico.src=ST.iconImg||`data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='20' fill='%233C3489'/%3E%3Ctext x='20' y='27' text-anchor='middle' font-size='22' fill='%23EEEDFE'%3E${encodeURIComponent(ST.iconEmoji)}%3C/text%3E%3C/svg%3E`;
+}
+renderContent();
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('sw.js').catch(e=>console.log('SW error:',e));
+}
+</script>
+</body>
+</html>
